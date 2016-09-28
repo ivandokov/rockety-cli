@@ -1,0 +1,25 @@
+{
+  "name": "rockety-cli",
+  "version": "1.0.0",
+  "description": "Rockety installer",
+  "author": "Ivan Dokov <ivangdokov@gmail.com>",
+  "homepage": "http://ivandokov.github.io/rockety",
+  "repository": "ivandokov/rockety-cli",
+  "license": "MIT",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "main": "./rockety",
+  "bin": {
+    "rockety": "./rockety"
+  },
+  "keywords": [
+    "rockety",
+    "rockety-cli",
+    "frontend",
+    "front-end",
+    "toolbox",
+    "installer",
+    "cli"
+  ]
+}
