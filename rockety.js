@@ -15,6 +15,12 @@ if (!projectName) {
     return;
 }
 
+try {
+    fs.statSync(projectName).isFile();
+    console.error(projectName + ' directory already exists!');
+    return;
+} catch(e) {}
+
 request({
     url: 'https://api.github.com/repos/ivandokov/rockety/tags',
     headers: {
