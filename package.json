@@ -21,5 +21,9 @@
     "toolbox",
     "installer",
     "cli"
-  ]
+  ],
+  "dependencies": {
+    "request": "^2.75.0",
+    "unzip": "^0.1.11"
+  }
 }
