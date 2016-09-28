@@ -1,3 +1,9 @@
+#!/usr/bin/env node
+
+'use strict';
+
+process.title = 'rockety';
+
 var fs = require('fs');
 var request = require('request');
 var unzip = require('unzip');
