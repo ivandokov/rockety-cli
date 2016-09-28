@@ -1,2 +1,2 @@
 # rockety-cli
-Rockety npm command line interface
+[Rockety](https://github.com/ivandokov/rockety) installer
