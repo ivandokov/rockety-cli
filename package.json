@@ -1,6 +1,6 @@
 {
   "name": "rockety-cli",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Rockety installer",
   "author": "Ivan Dokov <ivangdokov@gmail.com>",
   "homepage": "http://ivandokov.github.io/rockety",
