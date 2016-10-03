@@ -10,3 +10,8 @@ npm install rockety-cli -g
 ```
 rockety <project-name>
 ```
+
+For development version use 
+```
+rockety <project-name> --dev
+```
