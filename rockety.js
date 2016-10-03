@@ -58,7 +58,7 @@ function getRelease(fn) {
     });
 }
 
-function downloadAndSetup(downloadUrl, releaseName, extractDirName) {
+function download(downloadUrl, releaseName, extractDirName) {
     console.log('Installing Rockety ' + releaseName);
 
     request({
@@ -69,15 +69,25 @@ function downloadAndSetup(downloadUrl, releaseName, extractDirName) {
     }).pipe(fs.createWriteStream('rockety.zip')).on('close', function() {
         fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', function() {
             fs.unlink('rockety.zip');
-            fs.rename(extractDirName, projectName);
-            child.execSync('npm install', {
-                cwd: __dirname + '/' + projectName
-            });
-            console.log('Done!');
+            setup(extractDirName);
         });
     });
 }
 
+function setup(extractDirName) {
+    fs.rename(extractDirName, projectName);
+    console.log('Running npm install');
+    child.execSync('npm install', {cwd: __dirname + '/' + projectName});
+    cleanup();
+}
+
+function cleanup() {
+    fs.unlink(__dirname + '/' + projectName + '/CHANGELOG.md');
+    fs.unlink(__dirname + '/' + projectName + '/LICENSE');
+    fs.unlink(__dirname + '/' + projectName + '/README.md');
+    console.log('Done!');
+}
+
 getRelease(function(downloadUrl, releaseName, extractDirName) {
-    downloadAndSetup(downloadUrl, releaseName, extractDirName);
+    download(downloadUrl, releaseName, extractDirName);
 });
