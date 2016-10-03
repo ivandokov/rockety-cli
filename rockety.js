@@ -7,6 +7,7 @@ process.title = 'rockety';
 var fs = require('fs');
 var request = require('request');
 var unzip = require('unzip');
+var child = require('child_process');
 
 var args = process.argv.slice(2);
 var projectName = args[0];
@@ -69,6 +70,9 @@ function downloadAndSetup(downloadUrl, releaseName, extractDirName) {
         fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', function() {
             fs.unlink('rockety.zip');
             fs.rename(extractDirName, projectName);
+            child.execSync('npm install', {
+                cwd: __dirname + '/' + projectName
+            });
             console.log('Done!');
         });
     });
