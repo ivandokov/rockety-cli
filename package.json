@@ -2,10 +2,14 @@
   "name": "rockety-cli",
   "version": "1.2.0",
   "description": "Rockety installer",
-  "author": "Ivan Dokov <ivangdokov@gmail.com>",
   "homepage": "http://ivandokov.github.io/rockety",
   "repository": "ivandokov/rockety-cli",
   "license": "MIT",
+  "author": {
+    "name": "Ivan Dokov",
+    "email": "ivan@dokov.bg",
+    "url": "http://dokov.bg"
+  },
   "engines": {
     "node": ">=0.10.0"
   },
