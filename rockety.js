@@ -74,20 +74,21 @@ function download(downloadUrl, releaseName, extractDirName) {
     });
 }
 
-function setup(extractDirName) {
-    fs.rename(extractDirName, projectName);
-    console.log('Running npm install async');
-    exec('npm install', {cwd: projectName}, function(error, stdout, stderr) {});
-    console.log('Running bower install async');
-    exec('bower install', {cwd: projectName});
-    cleanup();
-}
-
 function cleanup() {
-    console.log('Cleanup');
+    console.log('Removing unnecessary files');
     fs.unlink(projectName + '/LICENSE');
     fs.unlink(projectName + '/README.md');
     fs.unlink(projectName + '/public/.gitignore');
+}
+
+function setup(extractDirName) {
+    fs.rename(extractDirName, projectName);
+
+    cleanup();
+
+    console.log('Running npm and bower install');
+    exec('bower install', {cwd: projectName, shell:'/bin/bash'});
+    exec('npm install', {cwd: projectName, shell:'/bin/bash'}, function(error, stdout, stderr) {});
 }
 
 getRelease(function(downloadUrl, releaseName, extractDirName) {
