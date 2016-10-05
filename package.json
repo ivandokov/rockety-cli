@@ -1,6 +1,6 @@
 {
   "name": "rockety-cli",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Rockety installer",
   "homepage": "http://ivandokov.github.io/rockety",
   "repository": "ivandokov/rockety-cli",
