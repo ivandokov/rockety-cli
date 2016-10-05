@@ -85,7 +85,6 @@ function setup(extractDirName) {
 
 function cleanup() {
     console.log('Cleanup');
-    fs.unlink(projectName + '/CHANGELOG.md');
     fs.unlink(projectName + '/LICENSE');
     fs.unlink(projectName + '/README.md');
     fs.unlink(projectName + '/public/.gitignore');
