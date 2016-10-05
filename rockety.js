@@ -78,6 +78,8 @@ function setup(extractDirName) {
     fs.rename(extractDirName, projectName);
     console.log('Running npm install');
     child.execSync('npm install', {cwd: __dirname + '/' + projectName});
+    console.log('Running bower install');
+    child.execSync('bower install', {cwd: __dirname + '/' + projectName});
     cleanup();
 }
 
@@ -85,6 +87,7 @@ function cleanup() {
     fs.unlink(__dirname + '/' + projectName + '/CHANGELOG.md');
     fs.unlink(__dirname + '/' + projectName + '/LICENSE');
     fs.unlink(__dirname + '/' + projectName + '/README.md');
+    fs.unlink(__dirname + '/' + projectName + '/public/.gitignore');
     console.log('Done!');
 }
 
