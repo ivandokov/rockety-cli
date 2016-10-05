@@ -7,7 +7,7 @@ process.title = 'rockety';
 var fs = require('fs');
 var request = require('request');
 var unzip = require('unzip');
-var child = require('child_process');
+var exec = require('child_process').exec;
 
 var args = process.argv.slice(2);
 var projectName = args[0];
@@ -76,19 +76,19 @@ function download(downloadUrl, releaseName, extractDirName) {
 
 function setup(extractDirName) {
     fs.rename(extractDirName, projectName);
-    console.log('Running npm install');
-    child.execSync('npm install', {cwd: __dirname + '/' + projectName});
-    console.log('Running bower install');
-    child.execSync('bower install', {cwd: __dirname + '/' + projectName});
+    console.log('Running npm install async');
+    exec('npm install', {cwd: __dirname + '/' + projectName}, function(error, stdout, stderr) {});
+    console.log('Running bower install async');
+    exec('bower install', {cwd: __dirname + '/' + projectName});
     cleanup();
 }
 
 function cleanup() {
+    console.log('Cleanup');
     fs.unlink(__dirname + '/' + projectName + '/CHANGELOG.md');
     fs.unlink(__dirname + '/' + projectName + '/LICENSE');
     fs.unlink(__dirname + '/' + projectName + '/README.md');
     fs.unlink(__dirname + '/' + projectName + '/public/.gitignore');
-    console.log('Done!');
 }
 
 getRelease(function(downloadUrl, releaseName, extractDirName) {
