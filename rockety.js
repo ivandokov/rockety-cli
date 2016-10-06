@@ -147,13 +147,19 @@ function setup(extractDirName) {
         success('Done!');
     };
 
-    msg('Running npm and bower install');
+    msg('Running npm and bower install (will take a few minutes)');
     spin.start();
     exec('bower install', {cwd: projectName, shell:'/bin/bash'}, function(error, stdout, stderr) {
+        if (error || stderr) {
+            err("bower " + (error || stderr));
+        }
         bower = true;
         complete();
     });
-    exec('npm install', {cwd: projectName, shell:'/bin/bash'}, function(error, stdout, stderr) {
+    exec('npm install --loglevel error', {cwd: projectName, shell:'/bin/bash'}, function(error, stdout, stderr) {
+        if (error || stderr) {
+            err("npm " + (error || stderr));
+        }
         npm = true;
         complete();
     });
