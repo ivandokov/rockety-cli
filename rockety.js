@@ -128,7 +128,7 @@ function download(downloadUrl, release, fn) {
     }).pipe(fs.createWriteStream('rockety.zip')).on('close', function() {
         fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', function() {
             fs.unlink('rockety.zip');
-            find.dir(/ivandokov-rockety-.*|rockety-dev/, __dirname, function(dirs) {
+            find.dir(/ivandokov-rockety-.*|rockety-dev/, process.cwd(), function(dirs) {
                 var extractedDir = dirs[0];
                 fn(extractedDir);
             });
