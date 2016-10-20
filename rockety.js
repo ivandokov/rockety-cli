@@ -7,6 +7,7 @@ process.title = 'rockety';
 var pkg = require('./package.json');
 var fs = require('fs');
 var path = require('path');
+var copydir = require('copy-dir');
 var request = require('request');
 var unzip = require('unzip');
 var child = require('child_process');
@@ -118,6 +119,15 @@ function getRelease(fn) {
 }
 
 function download(downloadUrl, release, fn) {
+    var source = path.join(process.env.HOME, '.rockety/' + release);
+
+    try {
+        fs.statSync(source).isFile();
+        msg('Using cached Rockety ' + release);
+        fn(source);
+        return;
+    } catch(e) {}
+
     msg('Downloading Rockety ' + release);
 
     request({
@@ -130,7 +140,9 @@ function download(downloadUrl, release, fn) {
             fs.unlink('rockety.zip');
             find.dir(/ivandokov-rockety-.*|rockety-dev/, process.cwd(), function(dirs) {
                 var extractedDir = dirs[0];
-                fn(extractedDir);
+                fs.mkdirSync(path.join(process.env.HOME, '.rockety'));
+                fs.rename(extractedDir, source);
+                fn(source);
             });
         });
     });
@@ -144,12 +156,12 @@ function cleanup(project, fn) {
     fn();
 }
 
-function setup(extractedDir, project, fn) {
+function setup(source, project, fn) {
     var bower, npm;
     var spin = new Spinner('%s');
     var opts;
 
-    fs.rename(extractedDir, project);
+    copydir.sync(source, project);
 
     var complete = function() {
         if (!bower || !npm) {
