@@ -6,16 +6,19 @@ process.title = 'rockety';
 
 var pkg = require('./package.json');
 var fs = require('fs');
+var path = require('path');
 var request = require('request');
 var unzip = require('unzip');
-var exec = require('child_process').exec;
+var exec = require('child_process');
+var find = require('find');
 var chalk = require('chalk');
+var help = require('./help').help();
 var Spinner = require('cli-spinner').Spinner;
 Spinner.setDefaultSpinnerString(18);
 
 var args = process.argv.slice(2);
-var projectName = args[0];
 var dev = args.indexOf('--dev') > -1;
+var noupdate = args.indexOf('--noupdate') > -1;
 
 var githubHeaders = {
     'User-Agent': 'Rockety-cli'
@@ -27,6 +30,9 @@ function err(err) {
 function msg(msg) {
     console.log(chalk.cyan(msg));
 }
+function info(msg) {
+    console.log(chalk.white(msg));
+}
 function cmd(cmd) {
     console.log(chalk.yellow(cmd));
 }
@@ -36,6 +42,11 @@ function success(msg) {
 
 function checkForUpdate(fn) {
     var release;
+
+    if (noupdate) {
+        fn();
+        return;
+    }
 
     request({
         url: 'https://api.github.com/repos/ivandokov/rockety-cli/tags',
@@ -62,27 +73,26 @@ function checkForUpdate(fn) {
     });
 }
 
-function validateProjectName() {
-    if (!projectName) {
+function validateProjectName(project) {
+    if (!project) {
         err('Project name is required!');
         return;
     }
 
     try {
-        fs.statSync(projectName).isFile();
-        err(projectName + ' directory already exists!');
+        fs.statSync(project).isFile();
+        err(project + ' directory already exists!');
         return;
     } catch(e) {}
 }
 
 function getRelease(fn) {
-    var release, downloadUrl, releaseName, extractDirName;
+    var lastCommit, downloadUrl, release;
 
     if (dev) {
         downloadUrl = 'https://github.com/ivandokov/rockety/archive/dev.zip';
-        releaseName = 'dev';
-        extractDirName = 'rockety-dev';
-        fn(downloadUrl, releaseName, extractDirName);
+        release = 'dev';
+        fn(downloadUrl, release);
         return;
     }
 
@@ -100,16 +110,15 @@ function getRelease(fn) {
             return;
         }
 
-        release = JSON.parse(body)[0];
-        downloadUrl = release.zipball_url;
-        releaseName = release.name;
-        extractDirName = 'ivandokov-rockety-' + release.commit.sha.substring(0,7);
-        fn(downloadUrl, releaseName, extractDirName);
+        lastCommit = JSON.parse(body)[0];
+        downloadUrl = lastCommit.zipball_url;
+        release = lastCommit.name;
+        fn(downloadUrl, release);
     });
 }
 
-function download(downloadUrl, releaseName, extractDirName) {
-    msg('Downloading Rockety ' + releaseName);
+function download(downloadUrl, release, fn) {
+    msg('Downloading Rockety ' + release);
 
     request({
         url: downloadUrl,
@@ -119,55 +128,87 @@ function download(downloadUrl, releaseName, extractDirName) {
     }).pipe(fs.createWriteStream('rockety.zip')).on('close', function() {
         fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', function() {
             fs.unlink('rockety.zip');
-            setup(extractDirName);
+            find.dir(/ivandokov-rockety-.*|rockety-dev/, __dirname, function(dirs) {
+                var extractedDir = dirs[0];
+                fn(extractedDir);
+            });
         });
     });
 }
 
-function cleanup() {
+function cleanup(project, fn) {
     msg('Removing unnecessary files');
-    fs.unlink(projectName + '/LICENSE');
-    fs.unlink(projectName + '/README.md');
-    fs.unlink(projectName + '/public/.gitignore');
+    fs.unlinkSync(project + '/LICENSE');
+    fs.unlinkSync(project + '/README.md');
+    fs.unlinkSync(project + '/public/.gitignore');
+    fn();
 }
 
-function setup(extractDirName) {
+function setup(extractedDir, project, fn) {
     var bower, npm;
     var spin = new Spinner('%s');
+    var opts;
 
-    fs.rename(extractDirName, projectName);
-
-    cleanup();
+    fs.rename(extractedDir, project);
 
     var complete = function() {
         if (!bower || !npm) {
             return;
         }
         spin.stop(true);
-        success('Done!');
+        fn();
     };
 
     msg('Running npm and bower install (will take a few minutes)');
     spin.start();
-    exec('bower install', {cwd: projectName, shell:'/bin/bash'}, function(error, stdout, stderr) {
+    opts = {cwd: project};
+
+    exec.exec('bower install', opts, function(error, stdout, stderr) {
         if (error || stderr) {
             err("bower " + (error || stderr));
         }
+
+        spin.stop(true);
+        msg('Bower is done');
+        spin.start();
+
         bower = true;
         complete();
     });
-    exec('npm install --loglevel error', {cwd: projectName, shell:'/bin/bash'}, function(error, stdout, stderr) {
+
+    exec.exec('npm install --loglevel error', opts, function(error, stdout, stderr) {
         if (error || stderr) {
             err("npm " + (error || stderr));
         }
+
+        spin.stop(true);
+        msg('Npm is done');
+        spin.start();
+
         npm = true;
         complete();
     });
 }
 
-checkForUpdate(function() {
-    validateProjectName();
-    getRelease(function(downloadUrl, releaseName, extractDirName) {
-        download(downloadUrl, releaseName, extractDirName);
-    });
-});
+switch (args[0]) {
+    case "help":
+    case undefined:
+        info(help);
+        break;
+
+    case "install":
+        checkForUpdate(function () {
+            var project = args[1];
+            validateProjectName(project);
+            getRelease(function (downloadUrl, release) {
+                download(downloadUrl, release, function(extractedDir) {
+                    setup(extractedDir, project, function() {
+                        cleanup(project, function() {
+                            success('Done!');
+                        });
+                    });
+                });
+            });
+        });
+        break;
+}
