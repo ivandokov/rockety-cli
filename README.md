@@ -1,2 +1,2 @@
 # rockety-cli
-[Documentation](https://github.com/ivandokov/rockety) | [Changelog](https://github.com/ivandokov/rockety#changelog-cli)
+[Documentation](http://ivandokov.github.io/rockety/) | [Changelog](http://ivandokov.github.io/rockety/#changelog-cli)
