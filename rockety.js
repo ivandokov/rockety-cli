@@ -9,7 +9,7 @@ var fs = require('fs');
 var path = require('path');
 var request = require('request');
 var unzip = require('unzip');
-var exec = require('child_process');
+var child = require('child_process');
 var find = require('find');
 var chalk = require('chalk');
 var help = require('./help').help();
@@ -24,14 +24,14 @@ var githubHeaders = {
     'User-Agent': 'Rockety-cli'
 };
 
+function log(msg) {
+    console.log(msg);
+}
 function err(err) {
     console.warn(chalk.red(err));
 }
 function msg(msg) {
     console.log(chalk.cyan(msg));
-}
-function info(msg) {
-    console.log(chalk.white(msg));
 }
 function cmd(cmd) {
     console.log(chalk.yellow(cmd));
@@ -163,7 +163,7 @@ function setup(extractedDir, project, fn) {
     spin.start();
     opts = {cwd: project};
 
-    exec.exec('bower install', opts, function(error, stdout, stderr) {
+    child.exec('bower install', opts, function(error, stdout, stderr) {
         if (error || stderr) {
             err("bower " + (error || stderr));
         }
@@ -176,7 +176,7 @@ function setup(extractedDir, project, fn) {
         complete();
     });
 
-    exec.exec('npm install --loglevel error', opts, function(error, stdout, stderr) {
+    child.exec('npm install --loglevel error', opts, function(error, stdout, stderr) {
         if (error || stderr) {
             err("npm " + (error || stderr));
         }
@@ -190,10 +190,19 @@ function setup(extractedDir, project, fn) {
     });
 }
 
+function proxy() {
+    var args = Array.isArray(arguments[0]) ? arguments[0] : Array.prototype.slice.call(arguments);
+    child.spawn('gulp', args, {
+        shell: true,
+        cwd: process.cwd(),
+        stdio: "inherit"
+    });
+}
+
 switch (args[0]) {
     case "help":
     case undefined:
-        info(help);
+        log(help);
         break;
 
     case "install":
@@ -210,5 +219,13 @@ switch (args[0]) {
                 });
             });
         });
+        break;
+
+    case "tasks":
+        proxy('--tasks');
+        break;
+
+    default:
+        proxy(args);
         break;
 }
