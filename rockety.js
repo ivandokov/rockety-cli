@@ -82,7 +82,7 @@ function validateProjectName(project) {
     try {
         fs.statSync(project).isFile();
         err(project + ' directory already exists!');
-        return;
+        process.exit();
     } catch(e) {}
 }
 
