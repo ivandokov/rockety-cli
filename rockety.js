@@ -65,7 +65,7 @@ function checkForUpdate(fn) {
 
         release = JSON.parse(body)[0];
         if (release.name !== 'v' + pkg.version) {
-            err('You are using ' + pkg.version + ' version of rockety-cli and the latest is v' + release.name);
+            err('You are using version ' + pkg.version + ' of rockety-cli and the latest is ' + release.name);
             err('Please upgrade rockety-cli by running:');
             cmd('npm install rockety-cli -g');
             return;
@@ -140,7 +140,14 @@ function download(downloadUrl, release, fn) {
             fs.unlink('rockety.zip');
             find.dir(/ivandokov-rockety-.*|rockety-dev/, process.cwd(), function(dirs) {
                 var extractedDir = dirs[0];
-                fs.mkdirSync(path.join(process.env.HOME, '.rockety'));
+                var cacheDir = path.join(process.env.HOME, '.rockety');
+
+                try {
+                    fs.statSync(cacheDir).isFile();
+                } catch(e) {
+                    fs.mkdirSync(cacheDir);
+                }
+
                 fs.rename(extractedDir, source);
                 fn(source);
             });
