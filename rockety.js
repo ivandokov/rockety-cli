@@ -160,6 +160,7 @@ function cleanup(project, fn) {
     fs.unlinkSync(project + '/LICENSE');
     fs.unlinkSync(project + '/README.md');
     fs.unlinkSync(project + '/public/.gitignore');
+    fs.unlinkSync(project + '.travis.yml');
     fn();
 }
 
