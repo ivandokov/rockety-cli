@@ -91,8 +91,8 @@ function getRelease(fn) {
     var lastCommit, downloadUrl, release;
 
     if (dev) {
-        downloadUrl = 'https://github.com/ivandokov/rockety/archive/dev.zip';
-        release = 'dev';
+        release = 'master';
+        downloadUrl = 'https://github.com/ivandokov/rockety/archive/' + release + '.zip';
         fn(downloadUrl, release);
         return;
     }
@@ -119,14 +119,28 @@ function getRelease(fn) {
 }
 
 function download(downloadUrl, release, fn) {
-    var source = path.join(process.env.HOME, '.rockety/' + release);
+    var cacheDir = path.join(process.env.HOME, '.rockety');
+    var releaseCacheDir = path.join(process.env.HOME, '.rockety/' + release);
 
+    /**
+     * Create cache directory for releases
+     */
     try {
-        fs.statSync(source).isFile();
+        fs.statSync(cacheDir).isFile();
+    } catch(e) {
+        fs.mkdirSync(cacheDir);
+    }
+
+    /**
+     * Check for cached version of this release
+     */
+    try {
+        fs.statSync(releaseCacheDir).isFile();
         msg('Using cached Rockety ' + release);
-        fn(source);
+        fn(releaseCacheDir);
         return;
-    } catch(e) {}
+    } catch (e) {
+    }
 
     msg('Downloading Rockety ' + release);
 
@@ -138,18 +152,10 @@ function download(downloadUrl, release, fn) {
     }).pipe(fs.createWriteStream('rockety.zip')).on('close', function() {
         fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', function() {
             fs.unlink('rockety.zip');
-            find.dir(/ivandokov-rockety-.*|rockety-dev/, process.cwd(), function(dirs) {
+            find.dir(/ivandokov-rockety-.*|rockety-master/, process.cwd(), function(dirs) {
                 var extractedDir = dirs[0];
-                var cacheDir = path.join(process.env.HOME, '.rockety');
-
-                try {
-                    fs.statSync(cacheDir).isFile();
-                } catch(e) {
-                    fs.mkdirSync(cacheDir);
-                }
-
-                fs.rename(extractedDir, source);
-                fn(source);
+                fs.rename(extractedDir, releaseCacheDir);
+                fn(releaseCacheDir);
             });
         });
     });
@@ -160,7 +166,7 @@ function cleanup(project, fn) {
     fs.unlinkSync(project + '/LICENSE');
     fs.unlinkSync(project + '/README.md');
     fs.unlinkSync(project + '/public/.gitignore');
-    fs.unlinkSync(project + '.travis.yml');
+    fs.unlinkSync(project + '/.travis.yml');
     fn();
 }
 
@@ -169,7 +175,11 @@ function setup(source, project, fn) {
     var spin = new Spinner('%s');
     var opts;
 
-    copydir.sync(source, project);
+    if (dev) {
+        fs.rename(source, project);
+    } else {
+        copydir.sync(source, project);
+    }
 
     var complete = function() {
         if (!bower || !npm) {
