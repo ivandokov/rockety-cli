@@ -224,7 +224,7 @@ switch (args[0]) {
         log(help);
         break;
 
-    case "install":
+    case "create":
         checkForUpdate(function () {
             var project = args[1];
             validateProjectName(project);

@@ -11,7 +11,7 @@ exports.help = function () {
         chalk.bold("OPTIONS"),
         "    Rockety-cli delegates the arguments which are not used internally to Gulp so any Gulp arguments will work.\n",
         "    "+chalk.bold("help")+" - displays this help\n",
-        "    "+chalk.bold("install <project-name> [args]")+" - creates a new Rockety project. There are few possible arguments:",
+        "    "+chalk.bold("create <project-name> [args]")+" - creates a new Rockety project. There are few possible arguments:",
         "        --dev - installs latest cutting edge development version",
         "        --noupdate - do not check for newer version of the rockety-cli",
         "",
