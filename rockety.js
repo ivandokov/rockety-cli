@@ -161,15 +161,6 @@ function download(downloadUrl, release, fn) {
     });
 }
 
-function cleanup(project, fn) {
-    msg('Removing unnecessary files');
-    fs.unlinkSync(project + '/LICENSE');
-    fs.unlinkSync(project + '/README.md');
-    fs.unlinkSync(project + '/public/.gitignore');
-    fs.unlinkSync(project + '/.travis.yml');
-    fn();
-}
-
 function setup(source, project, fn) {
     var bower, npm;
     var spin = new Spinner('%s');
@@ -242,9 +233,7 @@ switch (args[0]) {
             getRelease(function (downloadUrl, release) {
                 download(downloadUrl, release, function(extractedDir) {
                     setup(extractedDir, project, function() {
-                        cleanup(project, function() {
-                            success('Done!');
-                        });
+                        success('Done!');
                     });
                 });
             });
