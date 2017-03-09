@@ -162,7 +162,7 @@ function download(downloadUrl, release, fn) {
 }
 
 function setup(source, project, fn) {
-    var bower, npm;
+    var bower, npm, packageManager = 'npm';
     var spin = new Spinner('%s');
     var opts;
 
@@ -170,6 +170,17 @@ function setup(source, project, fn) {
         fs.rename(source, project);
     } else {
         copydir.sync(source, project);
+    }
+
+    msg('Checking if yarn is installed');
+    try {
+        child.execSync('yarn --version 2>/dev/null', {
+            shell: true
+        });
+        packageManager = 'yarn';
+        msg('Selecting yarn');
+    } catch(e) {
+        msg('Falling back to npm');
     }
 
     var complete = function() {
@@ -180,7 +191,7 @@ function setup(source, project, fn) {
         fn();
     };
 
-    msg('Running npm and bower install (will take a few minutes)');
+    msg('Running ' + packageManager + ' and bower install');
     spin.start();
     opts = {cwd: project};
 
@@ -190,20 +201,21 @@ function setup(source, project, fn) {
         }
 
         spin.stop(true);
-        msg('Bower is done');
+        msg('bower is done');
         spin.start();
 
         bower = true;
         complete();
     });
 
-    child.exec('npm install --loglevel error', opts, function(error, stdout, stderr) {
-        if (error || stderr) {
-            err("npm " + (error || stderr));
+    child.exec(packageManager + ' install --loglevel error', opts, function(error, stdout, stderr) {
+        var errMsg = (error || stderr);
+        if (errMsg && errMsg.indexOf('warning') !== 0) {
+            err(packageManager + " " + errMsg);
         }
 
         spin.stop(true);
-        msg('Npm is done');
+        msg(packageManager + ' is done');
         spin.start();
 
         npm = true;
