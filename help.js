@@ -17,6 +17,6 @@ exports.help = function () {
         "",
         "    "+chalk.bold("tasks")+" - lists all tasks\n",
         "    "+chalk.bold("build")+" - runs all tasks\n",
-        "    "+chalk.bold("watch")+" - runs all tasks and watches for changes"
+        "    "+chalk.bold("watch")+" - watches specified files for changes"
         ].join("\n");
 }
