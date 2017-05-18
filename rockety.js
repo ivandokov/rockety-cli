@@ -264,6 +264,13 @@ switch (args[0]) {
         break;
 
     default:
+        try {
+            fs.statSync('gulpfile.js').isFile();
+            fs.statSync('rockety.yml').isFile();
+        } catch(e) {
+            err('You are not in Rockety project directory!');
+            process.exit();
+        }
         proxy(args);
         break;
 }
