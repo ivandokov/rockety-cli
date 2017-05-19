@@ -16,6 +16,7 @@ var execSync = child.execSync;
 var spawn = child.spawn;
 var find = require('find');
 var chalk = require('chalk');
+var confirm = require('confirm-simple');
 var help = require('./help').help();
 var Spinner = require('cli-spinner').Spinner;
 Spinner.setDefaultSpinnerString(18);
@@ -77,7 +78,7 @@ function checkForUpdate(fn) {
     });
 }
 
-function validateProjectName(project) {
+function validateProjectName(project, fn) {
     if (!project) {
         err('Project name is required!');
         return;
@@ -85,8 +86,9 @@ function validateProjectName(project) {
 
     try {
         fs.statSync(project).isFile();
-        err(project + ' directory already exists!');
-        process.exit();
+        confirm(path.resolve(project) + ' already exists. Do you want to continue', ['yes', 'no'], function(ok) {
+            ok ? fn() : process.exit();
+        });
     } catch(e) {}
 }
 
@@ -142,8 +144,7 @@ function download(downloadUrl, release, fn) {
         msg('Using cached Rockety ' + release);
         fn(releaseCacheDir);
         return;
-    } catch (e) {
-    }
+    } catch (e) {}
 
     msg('Downloading Rockety ' + release);
 
@@ -170,7 +171,10 @@ function setup(source, project, fn) {
     var opts;
 
     if (dev) {
-        fs.rename(source, project);
+        copydir.sync(source, project);
+        execSync('rm -rf ' + source, {
+            shell: true
+        });
     } else {
         copydir.sync(source, project);
     }
@@ -248,11 +252,12 @@ switch (args[0]) {
     case "create":
         checkForUpdate(function () {
             var project = args[1];
-            validateProjectName(project);
-            getRelease(function (downloadUrl, release) {
-                download(downloadUrl, release, function(extractedDir) {
-                    setup(extractedDir, project, function() {
-                        success('Done!');
+            validateProjectName(project, function() {
+                getRelease(function (downloadUrl, release) {
+                    download(downloadUrl, release, function(extractedDir) {
+                        setup(extractedDir, project, function() {
+                            success('Done!');
+                        });
                     });
                 });
             });
