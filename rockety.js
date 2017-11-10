@@ -89,7 +89,9 @@ function validateProjectName(project, fn) {
         confirm(path.resolve(project) + ' already exists. Do you want to continue', ['yes', 'no'], function(ok) {
             ok ? fn() : process.exit();
         });
-    } catch(e) {}
+    } catch(e) {
+        fn();
+    }
 }
 
 function getRelease(fn) {
@@ -155,10 +157,10 @@ function download(downloadUrl, release, fn) {
         }
     }).pipe(fs.createWriteStream('rockety.zip')).on('close', function() {
         fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', function() {
-            fs.unlink('rockety.zip');
+            fs.unlink('rockety.zip', function() {});
             find.dir(/ivandokov-rockety-.*|rockety-master/, process.cwd(), function(dirs) {
                 var extractedDir = dirs[0];
-                fs.rename(extractedDir, releaseCacheDir);
+                fs.rename(extractedDir, releaseCacheDir, function() {});
                 fn(releaseCacheDir);
             });
         });
@@ -166,7 +168,7 @@ function download(downloadUrl, release, fn) {
 }
 
 function setup(source, project, fn) {
-    var bower, npm, packageManager = 'npm';
+    var packageManager = 'npm';
     var spin = new Spinner('%s');
     var opts;
 
@@ -190,33 +192,12 @@ function setup(source, project, fn) {
         msg('Falling back to npm');
     }
 
-    var complete = function() {
-        if (!bower || !npm) {
-            return;
-        }
-        spin.stop(true);
-        fn();
-    };
-
-    msg('Running ' + packageManager + ' and bower install');
+    msg('Running ' + packageManager + ' install');
     spin.start();
     opts = {
         env: process.env,
         cwd: project
     };
-
-    exec('bower install', opts, function(error, stdout, stderr) {
-        if (error || stderr) {
-            err("bower " + (error || stderr));
-        }
-
-        spin.stop(true);
-        msg('bower is done');
-        spin.start();
-
-        bower = true;
-        complete();
-    });
 
     exec(packageManager + ' install --loglevel error', opts, function(error, stdout, stderr) {
         var errMsg = (error || stderr);
@@ -225,11 +206,7 @@ function setup(source, project, fn) {
         }
 
         spin.stop(true);
-        msg(packageManager + ' is done');
-        spin.start();
-
-        npm = true;
-        complete();
+        fn();
     });
 }
 
