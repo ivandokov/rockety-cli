@@ -15,8 +15,12 @@ exports.help = function () {
         "        --dev - installs latest cutting edge development version",
         "        --noupdate - do not check for newer version of the rockety-cli",
         "",
+        "    "+chalk.bold("watch")+" - watches specified files for changes\n",
+        "    "+chalk.bold("serve")+" - launch web server with livereloads\n",
         "    "+chalk.bold("tasks")+" - lists all tasks\n",
-        "    "+chalk.bold("build")+" - runs all tasks\n",
-        "    "+chalk.bold("watch")+" - watches specified files for changes"
-        ].join("\n");
+        "    "+chalk.bold("build")+" - execute all build tasks\n",
+        "    "+chalk.bold("build:production")+" - execute all tasks for production. Sourcemaps are disabled and minification is enabled\n",
+        "    "+chalk.bold("build:prod")+" - alias of build:production\n",
+        "    "+chalk.bold("config")+" - list and validate configuration"
+    ].join("\n");
 }
