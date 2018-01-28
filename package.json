@@ -11,7 +11,7 @@
     "url": "http://dokov.bg"
   },
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=6.12.2"
   },
   "main": "./rockety.js",
   "bin": {

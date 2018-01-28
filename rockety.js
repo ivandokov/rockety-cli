@@ -4,49 +4,39 @@
 
 process.title = 'rockety';
 
-var pkg = require('./package.json');
-var fs = require('fs');
-var path = require('path');
-var copydir = require('copy-dir');
-var request = require('request');
-var unzip = require('unzip');
-var child = require('child_process');
-var exec = child.exec;
-var execSync = child.execSync;
-var spawn = child.spawn;
-var find = require('find');
-var chalk = require('chalk');
-var confirm = require('confirm-simple');
-var help = require('./help').help();
-var Spinner = require('cli-spinner').Spinner;
+let pkg = require('./package.json');
+let fs = require('fs');
+let path = require('path');
+let copydir = require('copy-dir');
+let request = require('request');
+let unzip = require('unzip');
+let child = require('child_process');
+let exec = child.exec;
+let execSync = child.execSync;
+let spawn = child.spawn;
+let find = require('find');
+let chalk = require('chalk');
+let confirm = require('confirm-simple');
+let help = require('./help').help();
+let Spinner = require('cli-spinner').Spinner;
 Spinner.setDefaultSpinnerString(18);
 
-var args = process.argv.slice(2);
-var dev = args.indexOf('--dev') > -1;
-var noupdate = args.indexOf('--noupdate') > -1;
+let args = process.argv.slice(2);
+let dev = args.indexOf('--dev') > -1;
+let noupdate = args.indexOf('--noupdate') > -1;
 
-var githubHeaders = {
+let githubHeaders = {
     'User-Agent': 'Rockety-cli'
 };
 
-function log(msg) {
-    console.log(msg);
-}
-function err(err) {
-    console.warn(chalk.red(err));
-}
-function msg(msg) {
-    console.log(chalk.cyan(msg));
-}
-function cmd(cmd) {
-    console.log(chalk.yellow(cmd));
-}
-function success(msg) {
-    console.log(chalk.green.bold(msg));
-}
+let log = (msg) => { console.log(msg); }
+let err = (err) => { console.warn(chalk.red(err)); }
+let msg = (msg) => { console.log(chalk.cyan(msg)); }
+let cmd = (cmd) => { console.log(chalk.yellow(cmd)); }
+let success = (msg) => { console.log(chalk.green.bold(msg)); }
 
-function checkForUpdate(fn) {
-    var release;
+let checkForUpdate = (fn) => {
+    let release;
 
     if (noupdate) {
         fn();
@@ -56,7 +46,7 @@ function checkForUpdate(fn) {
     request({
         url: 'https://api.github.com/repos/ivandokov/rockety-cli/tags',
         headers: githubHeaders
-    }, function(error, response, body) {
+    }, (error, response, body) => {
         if (error) {
             err(error);
             return;
@@ -78,7 +68,7 @@ function checkForUpdate(fn) {
     });
 }
 
-function validateProjectName(project, fn) {
+let validateProjectName = (project, fn) => {
     if (!project) {
         err('Project name is required!');
         return;
@@ -86,7 +76,7 @@ function validateProjectName(project, fn) {
 
     try {
         fs.statSync(project).isFile();
-        confirm(path.resolve(project) + ' already exists. Do you want to continue', ['yes', 'no'], function(ok) {
+        confirm(path.resolve(project) + ' already exists. Do you want to continue', ['yes', 'no'], ok => {
             ok ? fn() : process.exit();
         });
     } catch(e) {
@@ -94,8 +84,8 @@ function validateProjectName(project, fn) {
     }
 }
 
-function getRelease(fn) {
-    var lastCommit, downloadUrl, release;
+let getRelease = (fn) => {
+    let lastCommit, downloadUrl, release;
 
     if (dev) {
         release = 'master';
@@ -107,7 +97,7 @@ function getRelease(fn) {
     request({
         url: 'https://api.github.com/repos/ivandokov/rockety/tags',
         headers: githubHeaders
-    }, function(error, response, body) {
+    }, (error, response, body) => {
         if (error) {
             err(error);
             return;
@@ -125,9 +115,9 @@ function getRelease(fn) {
     });
 }
 
-function download(downloadUrl, release, fn) {
-    var cacheDir = path.join(process.env.HOME, '.rockety');
-    var releaseCacheDir = path.join(process.env.HOME, '.rockety/' + release);
+let download = (downloadUrl, release, fn) => {
+    let cacheDir = path.join(process.env.HOME, '.rockety');
+    let releaseCacheDir = path.join(process.env.HOME, '.rockety/' + release);
 
     /**
      * Create cache directory for releases
@@ -155,22 +145,22 @@ function download(downloadUrl, release, fn) {
         headers: {
             'User-Agent': 'Rockety-cli'
         }
-    }).pipe(fs.createWriteStream('rockety.zip')).on('close', function() {
-        fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', function() {
-            fs.unlink('rockety.zip', function() {});
-            find.dir(/ivandokov-rockety-.*|rockety-master/, process.cwd(), function(dirs) {
-                var extractedDir = dirs[0];
-                fs.rename(extractedDir, releaseCacheDir, function() {});
+    }).pipe(fs.createWriteStream('rockety.zip')).on('close', () => {
+        fs.createReadStream('rockety.zip').pipe(unzip.Extract({ path: './' })).on('close', () => {
+            fs.unlink('rockety.zip', () => {});
+            find.dir(/ivandokov-rockety-.*|rockety-master/, process.cwd(), dirs => {
+                let extractedDir = dirs[0];
+                fs.rename(extractedDir, releaseCacheDir, () => {});
                 fn(releaseCacheDir);
             });
         });
     });
 }
 
-function setup(source, project, fn) {
-    var packageManager = 'npm';
-    var spin = new Spinner('%s');
-    var opts;
+let setup = (source, project, fn) => {
+    let packageManager = 'npm';
+    let spin = new Spinner('%s');
+    let opts;
 
     if (dev) {
         copydir.sync(source, project);
@@ -199,8 +189,8 @@ function setup(source, project, fn) {
         cwd: project
     };
 
-    exec(packageManager + ' install --loglevel error', opts, function(error, stdout, stderr) {
-        var errMsg = (error || stderr);
+    exec(packageManager + ' install --loglevel error', opts, (error, stdout, stderr) => {
+        let errMsg = (error || stderr);
         if (errMsg && errMsg.indexOf('warning') !== 0) {
             err(packageManager + " " + errMsg);
         }
@@ -210,8 +200,8 @@ function setup(source, project, fn) {
     });
 }
 
-function proxy() {
-    var args = Array.isArray(arguments[0]) ? arguments[0] : Array.prototype.slice.call(arguments);
+let proxy = () => {
+    let args = Array.isArray(arguments[0]) ? arguments[0] : Array.prototype.slice.call(arguments);
     spawn('gulp', args, {
         shell: true,
         env: process.env,
@@ -227,12 +217,12 @@ switch (args[0]) {
         break;
 
     case "create":
-        checkForUpdate(function () {
-            var project = args[1];
-            validateProjectName(project, function() {
-                getRelease(function (downloadUrl, release) {
-                    download(downloadUrl, release, function(extractedDir) {
-                        setup(extractedDir, project, function() {
+        checkForUpdate(() => {
+            let project = args[1];
+            validateProjectName(project, () => {
+                getRelease((downloadUrl, release) => {
+                    download(downloadUrl, release, (extractedDir) => {
+                        setup(extractedDir, project, () => {
                             success('Done!');
                         });
                     });
