@@ -200,7 +200,7 @@ let setup = (source, project, fn) => {
     });
 }
 
-let proxy = () => {
+function proxy() {
     let args = Array.isArray(arguments[0]) ? arguments[0] : Array.prototype.slice.call(arguments);
     spawn('gulp', args, {
         shell: true,
