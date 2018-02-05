@@ -2,7 +2,7 @@
   "name": "rockety-cli",
   "version": "1.11.1",
   "description": "Rockety installer",
-  "homepage": "http://ivandokov.github.io/rockety",
+  "homepage": "https://github.com/ivandokov/rockety",
   "repository": "ivandokov/rockety-cli",
   "license": "MIT",
   "author": {
